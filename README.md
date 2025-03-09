@@ -1,43 +1,111 @@
-# README.md
+# PostgreSQL and pgAdmin with Docker Compose
 
-## Docker-Compose para PostgreSQL y pgAdmin
+A production-ready Docker Compose setup for running PostgreSQL database with pgAdmin web interface, featuring SSL encryption for enhanced security.
 
-Este repositorio contiene una configuración Docker-Compose para desplegar un servicio PostgreSQL y una interfaz de usuario pgAdmin en contenedores Docker.
+## 🚀 Features
 
-### Versiones de los servicios:
-* PostgreSQL 15.1
-* pgAdmin 4 v6.17
+- PostgreSQL 15.1 database server with SSL encryption
+- pgAdmin 4 v6.17 web interface
+- Secure configuration with environment variables
+- Health checks for container orchestration
+- Persistent data storage
+- Bridge network for container isolation
 
-### Configuración
+## 📋 Prerequisites
 
-El archivo `docker-compose.yml` define los siguientes servicios:
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
-* `db`: Este servicio es para una base de datos PostgreSQL. La imagen de Docker utilizada es `postgres:15.1`. El contenedor se llama `postgres_database`. Los datos de la base de datos se almacenan en el volumen local `./postgres_data`. La contraseña del usuario postgres se establece como `123456`.
+## 🛠️ Quick Start
 
-* `pgAdmin`: Este servicio es para la interfaz de usuario pgAdmin. La imagen de Docker utilizada es `dpage/pgadmin4:6.17`. El contenedor se llama `pg_admin`. Este servicio depende del servicio `db`, lo que significa que el servicio `db` se iniciará antes que `pgAdmin`. El puerto 8080 del host está mapeado al puerto 80 del contenedor. Los datos de pgAdmin se almacenan en el volumen local `./pgadmin_data`. La contraseña y el correo electrónico predeterminados para pgAdmin se establecen como `123456` y `superman@google.com` respectivamente.
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/sotacode/postgres-pgadmin-docker-compose
+   cd postgres-pgadmin-docker-compose
+   ```
 
-### Instrucciones de uso
+2. Create a `.env` file in the project root (or modify the existing one) with your credentials:
+   ```env
+   # PostgreSQL Configuration
+   POSTGRES_PASSWORD=YourStrongPasswordHere123!@#
+   POSTGRES_USER=postgres
+   POSTGRES_DB=postgres_db
 
-1. Asegúrate de tener instalado Docker y Docker Compose en tu sistema. Si no es así, puedes descargarlos e instalarlos desde [aquí](https://docs.docker.com/get-docker/) y [aquí](https://docs.docker.com/compose/install/).
+   # pgAdmin Configuration
+   PGADMIN_DEFAULT_EMAIL=your.email@domain.com
+   PGADMIN_DEFAULT_PASSWORD=YourStrongPgAdminPass456!@#
 
-2. Clona este repositorio a tu máquina local.
+   # Port Configuration
+   PGADMIN_PORT=8080
+   POSTGRES_PORT=5432
+   ```
 
-3. Abre una terminal y navega hasta el directorio que contiene el archivo `docker-compose.yml`.
+3. Start the services:
+   ```bash
+   docker-compose up -d
+   ```
 
-4. Ejecuta el siguiente comando para iniciar los servicios:
+4. Access pgAdmin:
+   - Open your browser and navigate to `http://localhost:8080`
+   - Login using the credentials set in your `.env` file:
+     - Email: your.email@domain.com
+     - Password: YourStrongPgAdminPass456!@#
 
-    ```
-    docker-compose up -d
-    ```
+## 🔒 Connecting to PostgreSQL via pgAdmin
 
-5. Navega a `http://localhost:8080` en tu navegador web para acceder a la interfaz de usuario de pgAdmin.
+1. In pgAdmin, right-click on "Servers" and select "Create" → "Server"
+2. In the "General" tab, give your connection a name (e.g., "Local PostgreSQL")
+3. In the "Connection" tab, enter:
+   - Host name/address: `db` (this is the service name in docker-compose)
+   - Port: `5432`
+   - Maintenance database: `postgres_db`
+   - Username: `postgres`
+   - Password: Your POSTGRES_PASSWORD from .env file
 
-6. Utiliza el correo electrónico y la contraseña predeterminados proporcionados en el archivo `docker-compose.yml` para iniciar sesión en pgAdmin.
+## 📁 Project Structure
 
-7. Para detener y eliminar los servicios, ejecuta el siguiente comando:
+```
+.
+├── docker-compose.yml    # Docker Compose configuration
+├── .env                 # Environment variables
+├── init-ssl.sh         # SSL certificate initialization script
+├── postgres_data/      # PostgreSQL data directory
+└── pgadmin_data/      # pgAdmin data directory
+```
 
-    ```
-    docker-compose down
-    ```
+## 🔐 Security Features
 
-Nota: Por motivos de seguridad, te recomiendo que cambies las contraseñas y el correo electrónico predeterminados en un entorno de producción. No almacenes contraseñas en texto plano en tu archivo `docker-compose.yml`. Utiliza variables de entorno o Docker Secrets para manejar las credenciales sensibles.
+- SSL encryption enabled by default
+- Secure password authentication (scram-sha-256)
+- Environment variables for sensitive data
+- Isolated network for containers
+- Health checks to ensure service availability
+
+## 🛑 Stopping the Services
+
+To stop and remove the containers:
+```bash
+docker-compose down
+```
+
+To stop and remove containers along with volumes (this will delete all data):
+```bash
+docker-compose down -v
+```
+
+## ⚠️ Production Considerations
+
+1. Change all default passwords and credentials
+2. Use Docker secrets or a secure secrets management system
+3. Regular backup of your data volumes
+4. Configure proper firewall rules
+5. Keep your Docker images updated
+6. Monitor your containers' health and logs
+
+## 🤝 Contributing
+
+Feel free to open issues and pull requests for any improvements you want to add.
+
+## 📝 License
+
+This project is open source and available under the [MIT License](LICENSE).

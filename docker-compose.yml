@@ -1,28 +1,49 @@
-version: '3'
+version: '3.8'
 
 services:
   db:
     container_name: postgres_database
     image: postgres:15.1
+    restart: unless-stopped
     volumes:
       #- postgres-db:/var/lib/postgresql/data
       - ./postgres_data:/var/lib/postgresql/data
+      - ./init-ssl.sh:/docker-entrypoint-initdb.d/init-ssl.sh
     environment:
-      - POSTGRES_PASSWORD=123456
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+    networks:
+      - postgres-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   
-  pgAdmin:
+  pgadmin:
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     container_name: pg_admin
     image: dpage/pgadmin4:6.17
+    restart: unless-stopped
     ports:
-      - "8080:80"
+      - "${PGADMIN_PORT}:80"
     volumes:
       - ./pgadmin_data:/var/lib/pgadmin
     environment:
-      - PGADMIN_DEFAULT_PASSWORD=123456
-      - PGADMIN_DEFAULT_EMAIL=superman@google.com
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_CONFIG_SERVER_MODE=False
+      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=True
+    networks:
+      - postgres-network
 
 #volumes:
 #  postgres-db:
 #    external: true
+
+networks:
+  postgres-network:
+    driver: bridge
